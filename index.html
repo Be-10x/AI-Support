@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be10x AI Support</title>
+    <style>
+        /* 1. BACKGROUND SETUP (Crucial for the invisible patch) */
+        body {
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #020617; /* Solid dark color for edges */
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden; 
+        }
+
+        /* The Gradient Glow (Center only) */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle, #1e293b 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 2. THE CHAT CONTAINER (Wide & Responsive) */
+        #mobile-container {
+            position: relative;
+            width: 90%;            /* Mobile: 90% width */
+            max-width: 1000px;     /* Laptop: Max 1000px wide */
+            height: 90vh;
+            background: #1e293b;
+            border-radius: 24px;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9);
+            border: 1px solid #334155;
+            z-index: 10; /* Above background, below patch */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 3. THE INVISIBLE PATCH (The Magic Trick) */
+        /* This square sits in the corner and covers the logo */
+        #corner-patch {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 100px;  /* Big enough to cover the button */
+            height: 100px;
+            background-color: #020617; /* Exact match to body background */
+            z-index: 999999; /* Higher than EVERYTHING */
+            pointer-events: auto; /* Blocks clicks so user can't hit the hidden button */
+        }
+
+        /* 4. LOADER */
+        #custom-loader {
+            text-align: center;
+            color: #94a3b8;
+            position: relative;
+            z-index: 20;
+        }
+
+        /* 5. EXTRA SAFEGUARDS (Try to hide it normally first) */
+        div[id^="brainfish-"], div[class^="bf-"] {
+            width: 0px !important; height: 0px !important;
+            border: none !important; opacity: 0 !important;
+            z-index: -1 !important;
+        }
+        iframe[title="Brainfish launcher"], iframe[title="Launcher"] {
+            opacity: 0 !important; pointer-events: none !important;
+            position: fixed !important; bottom: -9999px !important;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="mobile-container">
+        <div id="custom-loader">Loading AI...</div>
+    </div>
+
+    <div id="corner-patch"></div>
+
+    <script type="module">
+        import Brainfish from "https://cdn.jsdelivr.net/npm/@brainfish-ai/web-widget@latest/dist/web.js";
+
+        Brainfish.Widgets.init({
+            // 👇 PASTE KEY HERE 👇
+            widgetKey: "bf_agent_nMhrEex4u3Jwc3yOjq4FkQ8DLv544hHyTe3xDU" 
+        });
+
+        // THE MAGNET SCRIPT
+        const magnetInterval = setInterval(() => {
+            const allIframes = document.querySelectorAll('iframe');
+            const container = document.getElementById('mobile-container');
+            const loader = document.getElementById('custom-loader');
+
+            allIframes.forEach(iframe => {
+                const title = iframe.getAttribute('title');
+
+                // If CHAT WINDOW -> Move to Center
+                if (title !== "Brainfish launcher" && title !== "Launcher" && container) {
+                    if (iframe.parentElement !== container) {
+                        if(Brainfish.Widgets.open) Brainfish.Widgets.open();
+                        container.appendChild(iframe);
+                        
+                        iframe.style.position = "absolute";
+                        iframe.style.top = "0"; iframe.style.left = "0";
+                        iframe.style.width = "100%"; iframe.style.height = "100%";
+                        iframe.style.opacity = "1"; 
+                        iframe.style.borderRadius = "24px";
+                        iframe.style.border = "none";
+                        
+                        if(loader) loader.style.display = 'none';
+                    }
+                }
+            });
+        }, 50);
+    </script>
+
+</body>
+</html>
