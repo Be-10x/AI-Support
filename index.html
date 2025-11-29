@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Be10x AI Support</title>
     <style>
-        /* 1. BACKGROUND SETUP (Crucial for the invisible patch) */
+        /* 1. BACKGROUND SETUP */
         body {
             margin: 0;
             height: 100vh;
@@ -13,12 +13,12 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #020617; /* Solid dark color for edges */
+            background-color: #020617; 
             font-family: 'Segoe UI', sans-serif;
             overflow: hidden; 
         }
 
-        /* The Gradient Glow (Center only) */
+        /* Gradient Glow */
         body::before {
             content: '';
             position: absolute;
@@ -30,53 +30,76 @@
             pointer-events: none;
         }
 
-        /* 2. THE CHAT CONTAINER (Wide & Responsive) */
+        /* 2. THE CHAT CONTAINER (Adaptive) */
         #mobile-container {
             position: relative;
-            width: 90%;            /* Mobile: 90% width */
-            max-width: 1000px;     /* Laptop: Max 1000px wide */
+            width: 90%;            
+            max-width: 1000px;     
             height: 90vh;
             background: #1e293b;
             border-radius: 24px;
             box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9);
             border: 1px solid #334155;
-            z-index: 10; /* Above background, below patch */
+            z-index: 10; 
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* 3. THE INVISIBLE PATCH (The Magic Trick) */
-        /* This square sits in the corner and covers the logo */
+        /* 3. THE LAPTOP PATCH (Hides logo on Desktop) */
         #corner-patch {
             position: fixed;
             bottom: 0;
             right: 0;
-            width: 100px;  /* Big enough to cover the button */
-            height: 100px;
-            background-color: #020617; /* Exact match to body background */
-            z-index: 999999; /* Higher than EVERYTHING */
-            pointer-events: auto; /* Blocks clicks so user can't hit the hidden button */
+            width: 120px; /* Made slightly bigger to be safe */
+            height: 120px;
+            background-color: #020617; 
+            z-index: 999999; 
+            pointer-events: auto; 
         }
 
-        /* 4. LOADER */
+        /* 4. THE MOBILE FIX (CRITICAL) */
+        /* When on a phone... */
+        @media screen and (max-width: 768px) {
+            
+            /* A. Remove the Black Patch so you can type */
+            #corner-patch {
+                display: none !important; 
+            }
+
+            /* B. Make the chat Full Screen (App Mode) */
+            #mobile-container {
+                width: 100% !important; 
+                height: 100% !important; 
+                border-radius: 0 !important; 
+                border: none !important;
+            }
+        }
+
+        /* 5. THE INVISIBLE CLOAK (Hides logo on Mobile) */
+        /* This hides the button even without the patch */
+        iframe[title="Brainfish launcher"], 
+        iframe[title="Launcher"],
+        .bf-launcher {
+            opacity: 0 !important; 
+            pointer-events: none !important;
+            position: fixed !important; 
+            bottom: -9999px !important;
+            display: none !important;
+        }
+
+        /* Safety Rules */
+        div[id^="brainfish-"]:not(#mobile-container),
+        div[class^="bf-"]:not(#mobile-container) {
+            width: 0 !important; height: 0 !important;
+            opacity: 0 !important; z-index: -1 !important;
+        }
+
+        /* Loader */
         #custom-loader {
-            text-align: center;
-            color: #94a3b8;
-            position: relative;
-            z-index: 20;
-        }
-
-        /* 5. EXTRA SAFEGUARDS (Try to hide it normally first) */
-        div[id^="brainfish-"], div[class^="bf-"] {
-            width: 0px !important; height: 0px !important;
-            border: none !important; opacity: 0 !important;
-            z-index: -1 !important;
-        }
-        iframe[title="Brainfish launcher"], iframe[title="Launcher"] {
-            opacity: 0 !important; pointer-events: none !important;
-            position: fixed !important; bottom: -9999px !important;
+            text-align: center; color: #94a3b8;
+            position: relative; z-index: 20;
         }
 
     </style>
@@ -97,7 +120,6 @@
             widgetKey: "bf_agent_nMhrEex4u3Jwc3yOjq4FkQ8DLv544hHyTe3xDU" 
         });
 
-        // THE MAGNET SCRIPT
         const magnetInterval = setInterval(() => {
             const allIframes = document.querySelectorAll('iframe');
             const container = document.getElementById('mobile-container');
@@ -105,22 +127,23 @@
 
             allIframes.forEach(iframe => {
                 const title = iframe.getAttribute('title');
-
-                // If CHAT WINDOW -> Move to Center
-                if (title !== "Brainfish launcher" && title !== "Launcher" && container) {
-                    if (iframe.parentElement !== container) {
-                        if(Brainfish.Widgets.open) Brainfish.Widgets.open();
-                        container.appendChild(iframe);
-                        
-                        iframe.style.position = "absolute";
-                        iframe.style.top = "0"; iframe.style.left = "0";
-                        iframe.style.width = "100%"; iframe.style.height = "100%";
-                        iframe.style.opacity = "1"; 
-                        iframe.style.borderRadius = "24px";
-                        iframe.style.border = "none";
-                        
-                        if(loader) loader.style.display = 'none';
-                    }
+                // If it is the Launcher, Hide it
+                if (title === "Brainfish launcher" || title === "Launcher") {
+                    iframe.style.setProperty('display', 'none', 'important');
+                    iframe.style.setProperty('bottom', '-9999px', 'important');
+                }
+                // If it is the Chat Window, Move it
+                else if (container && iframe.parentElement !== container) {
+                    if(Brainfish.Widgets.open) Brainfish.Widgets.open();
+                    container.appendChild(iframe);
+                    
+                    iframe.style.position = "absolute";
+                    iframe.style.top = "0"; iframe.style.left = "0";
+                    iframe.style.width = "100%"; iframe.style.height = "100%";
+                    iframe.style.opacity = "1"; 
+                    iframe.style.border = "none";
+                    
+                    if(loader) loader.style.display = 'none';
                 }
             });
         }, 50);
