@@ -52,7 +52,7 @@
             position: fixed;
             bottom: 0;
             right: 0;
-            width: 120px; /* Made slightly bigger to be safe */
+            width: 120px; 
             height: 120px;
             background-color: #020617; 
             z-index: 999999; 
@@ -60,9 +60,7 @@
         }
 
         /* 4. THE MOBILE FIX (CRITICAL) */
-        /* When on a phone... */
         @media screen and (max-width: 768px) {
-            
             /* A. Remove the Black Patch so you can type */
             #corner-patch {
                 display: none !important; 
@@ -78,7 +76,6 @@
         }
 
         /* 5. THE INVISIBLE CLOAK (Hides logo on Mobile) */
-        /* This hides the button even without the patch */
         iframe[title="Brainfish launcher"], 
         iframe[title="Launcher"],
         .bf-launcher {
@@ -115,38 +112,60 @@
     <script type="module">
         import Brainfish from "https://cdn.jsdelivr.net/npm/@brainfish-ai/web-widget@latest/dist/web.js";
 
-        Brainfish.Widgets.init({
-            // 👇 PASTE KEY HERE 👇
-            widgetKey: "bf_agent_nMhrEex4u3Jwc3yOjq4FkQ8DLv544hHyTe3xDU" 
-        });
+        // 1. Fetch the Key Securely
+        async function initBot() {
+            try {
+                // This calls the 'api/get-key.js' file you created
+                const response = await fetch('/api/get-key'); 
+                const data = await response.json();
+                const myKey = data.key; 
 
-        const magnetInterval = setInterval(() => {
-            const allIframes = document.querySelectorAll('iframe');
-            const container = document.getElementById('mobile-container');
-            const loader = document.getElementById('custom-loader');
+                if (myKey) {
+                    // 2. Initialize Brainfish
+                    Brainfish.Widgets.init({
+                        widgetKey: myKey
+                    });
 
-            allIframes.forEach(iframe => {
-                const title = iframe.getAttribute('title');
-                // If it is the Launcher, Hide it
-                if (title === "Brainfish launcher" || title === "Launcher") {
-                    iframe.style.setProperty('display', 'none', 'important');
-                    iframe.style.setProperty('bottom', '-9999px', 'important');
+                    // 3. Start the UI Fixes (Magnet Logic)
+                    startMagnet(); 
                 }
-                // If it is the Chat Window, Move it
-                else if (container && iframe.parentElement !== container) {
-                    if(Brainfish.Widgets.open) Brainfish.Widgets.open();
-                    container.appendChild(iframe);
-                    
-                    iframe.style.position = "absolute";
-                    iframe.style.top = "0"; iframe.style.left = "0";
-                    iframe.style.width = "100%"; iframe.style.height = "100%";
-                    iframe.style.opacity = "1"; 
-                    iframe.style.border = "none";
-                    
-                    if(loader) loader.style.display = 'none';
-                }
-            });
-        }, 50);
+            } catch (error) {
+                console.error("Error loading bot key:", error);
+            }
+        }
+
+        initBot();
+
+        // 4. THE MAGNET LOGIC (Kept exactly as you had it)
+        function startMagnet() {
+            const magnetInterval = setInterval(() => {
+                const allIframes = document.querySelectorAll('iframe');
+                const container = document.getElementById('mobile-container');
+                const loader = document.getElementById('custom-loader');
+
+                allIframes.forEach(iframe => {
+                    const title = iframe.getAttribute('title');
+                    // Launcher -> Hide
+                    if (title === "Brainfish launcher" || title === "Launcher") {
+                        iframe.style.setProperty('display', 'none', 'important');
+                        iframe.style.setProperty('bottom', '-9999px', 'important');
+                    }
+                    // Chat Window -> Move
+                    else if (container && iframe.parentElement !== container) {
+                        if(Brainfish.Widgets.open) Brainfish.Widgets.open();
+                        container.appendChild(iframe);
+                        
+                        iframe.style.position = "absolute";
+                        iframe.style.top = "0"; iframe.style.left = "0";
+                        iframe.style.width = "100%"; iframe.style.height = "100%";
+                        iframe.style.opacity = "1"; 
+                        iframe.style.border = "none";
+                        
+                        if(loader) loader.style.display = 'none';
+                    }
+                });
+            }, 50);
+        }
     </script>
 
 </body>
